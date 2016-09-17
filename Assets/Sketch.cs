@@ -6,11 +6,14 @@ using LikeProcessing;
 public class Sketch : PSketch {
 
 	int ribbonCnt = 1;
-	int StickLen = Screen.width / 5;
+	int StickLen = Screen.width / 4;
 
 	Ribbon[] ribbons;
 
 	void Start () {
+		setupCamera (true);
+		Application.targetFrameRate = 20;
+
 		ribbons = new Ribbon[ribbonCnt];
 		for(int i=0; i<ribbonCnt; i++) {
 			Ribbon ribbon = new Ribbon ();
@@ -109,12 +112,27 @@ public class Sketch : PSketch {
 //					vertices.Add (p.loc);
 //				vertices.Add (pback.loc);
 				int len = vertices.Count;
-				vertices.Add (p.leftHead);
+				/*
 				vertices.Add (p.rightHead);
-				vertices.Add (pback.rightHead);
+				vertices.Add (p.leftHead);
 				vertices.Add (pback.leftHead);
+				vertices.Add (pback.rightHead);
 				int[] indeces = { len, len + 1, len + 2, len + 2, len + 3, len };
 				triangles.AddRange (indeces);
+				*/
+
+				List<Vector3> leftBezierPoints = bezierPoints(p.leftHead, p.left, pback.leftHead, pback.leftHead);
+				List<Vector3> rightBezierPoints = bezierPoints (p.rightHead, p.right, pback.rightHead, pback.rightHead);
+
+				vertices.AddRange (rightBezierPoints);
+				vertices.AddRange (leftBezierPoints);
+				int detail = leftBezierPoints.Count;
+				for(int j=0; j<leftBezierPoints.Count-1; j++) {
+					int[] indeces = {len, len+detail, len+1, len+detail, len+detail+1, len+1};
+					triangles.AddRange (indeces);
+					len++;
+				}
+
 			}
 //			lineObj.triangles = new int[] {0, 1, 2};
 //			LineRenderer lineRenderer = lineObj.GetComponent<LineRenderer> ();
@@ -125,6 +143,56 @@ public class Sketch : PSketch {
 //			lineRenderer.SetPositions(vertices.ToArray());
 			mesh.vertices = vertices.ToArray();
 			mesh.triangles = triangles.ToArray();
+		}
+
+		List<Vector3> bezierPoints(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4) {
+			float x1 = v1.x, y1 = v1.y, z1 = v1.z;
+			float x2 = v2.x, y2 = v2.y, z2 = v2.z;
+			float x3 = v3.x, y3 = v3.y, z3 = v3.z;
+			float x4 = v4.x, y4 = v4.y, z4 = v4.z;
+
+			int bezierDetail = 20;
+			float f  = 1.0f / bezierDetail;
+			float ff = f * f;
+			float fff = ff * f;
+
+			Matrix4x4 bezierMatrix = Matrix4x4.identity;
+			bezierMatrix.SetRow (0, new Vector4(0,     0,    0, 1));
+			bezierMatrix.SetRow (1, new Vector4(fff,   ff,   f, 0));
+			bezierMatrix.SetRow (2, new Vector4(6*fff, 2*ff, 0, 0));
+			bezierMatrix.SetRow (3, new Vector4(6*fff, 0,    0, 0));
+
+			Matrix4x4 bezierBasicMatrix = Matrix4x4.identity;
+			bezierBasicMatrix.SetRow (0, new Vector4(-1,  3, -3,  1));
+			bezierBasicMatrix.SetRow (1, new Vector4( 3, -6,  3,  0));
+			bezierBasicMatrix.SetRow (2, new Vector4(-3,  3,  0,  0));
+			bezierBasicMatrix.SetRow (3, new Vector4( 1,  0,  0,  0));
+
+			Matrix4x4 draw = bezierMatrix * bezierBasicMatrix;
+
+			float xplot1 = draw[1,0]*x1 + draw[1,1]*x2 + draw[1,2]*x3 + draw[1,3]*x4;
+			float xplot2 = draw[2,0]*x1 + draw[2,1]*x2 + draw[2,2]*x3 + draw[2,3]*x4;
+			float xplot3 = draw[3,0]*x1 + draw[3,1]*x2 + draw[3,2]*x3 + draw[3,3]*x4;
+
+			float yplot1 = draw[1,0]*y1 + draw[1,1]*y2 + draw[1,2]*y3 + draw[1,3]*y4;
+			float yplot2 = draw[2,0]*y1 + draw[2,1]*y2 + draw[2,2]*y3 + draw[2,3]*y4;
+			float yplot3 = draw[3,0]*y1 + draw[3,1]*y2 + draw[3,2]*y3 + draw[3,3]*y4;
+
+			float zplot1 = draw[1,0]*z1 + draw[1,1]*z2 + draw[1,2]*z3 + draw[1,3]*z4;
+			float zplot2 = draw[2,0]*z1 + draw[2,1]*z2 + draw[2,2]*z3 + draw[2,3]*z4;
+			float zplot3 = draw[3,0]*z1 + draw[3,1]*z2 + draw[3,2]*z3 + draw[3,3]*z4;
+
+			List<Vector3> vertices = new List<Vector3>();
+			vertices.Add (new Vector3(x1, y1, z1));
+
+			for (int j = 0; j < bezierDetail; j++) {
+				x1 += xplot1; xplot1 += xplot2; xplot2 += xplot3;
+				y1 += yplot1; yplot1 += yplot2; yplot2 += yplot3;
+				z1 += zplot1; zplot1 += zplot2; zplot2 += zplot3;
+				vertices.Add (new Vector3(x1, y1, z1));
+			}
+
+			return vertices;
 		}
 	}
 
@@ -139,23 +207,36 @@ public class Sketch : PSketch {
 		public float radius;
 		Ribbon ribbon;
 
-//		GameObject obj;
+		GameObject obj, obj2;
 
 		public Particle(Ribbon ribbon, Vector3 loc) {
 			this.ribbon = ribbon;
+
+			obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			obj.transform.localScale *= 10;
+			obj2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			obj2.transform.localScale *= 10;
 			reset(loc);
-//			obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-//			obj.transform.localScale *= 20;
 		}
 
 		public void reset(Vector3 head) {
 			loc = left = right = leftHead = rightHead = head;
+//			loc = head;
+//			left = head;
+//			right = head;
+//			leftHead = head;
+//			rightHead = head;
 			speed = Vector3.zero;
+			obj.transform.position = left;
+			obj2.transform.position = right;
 		}
 
 		public void move(Particle pback, Particle phead, int index) {
 			Vector3 direction = (phead.loc + loc) / 2 - (pback.loc + loc) / 2;
 			float radian = Mathf.Atan2 (direction.y, direction.x);
+//			if (index == ribbon.particleCnt - 3) {
+//				Debug.Log (direction);
+//			}
 			float distance = direction.magnitude;
 			if (distance > ribbon.maxDistance) {
 				Vector3 preloc = loc;
@@ -190,20 +271,22 @@ public class Sketch : PSketch {
 				if (radius > 1)
 					radius = 1;
 			}
-
+//			radius = 50;
 			left = loc + new Vector3 (
 				Mathf.Cos(radian+(Mathf.PI/2*3)) * radius,
-				Mathf.Cos(radian+(Mathf.PI/2*3)) * radius,
+				Mathf.Sin(radian+(Mathf.PI/2*3)) * radius,
 				0
 			);
 			right = loc + new Vector3 (
 				Mathf.Cos(radian+(Mathf.PI/2)) * radius,
-				Mathf.Cos(radian+(Mathf.PI/2)) * radius,
+				Mathf.Sin(radian+(Mathf.PI/2)) * radius,
 				0
 			);
 			leftHead  = (phead.left + left) / 2;
 			rightHead = (phead.right + right) / 2;
-//			obj.transform.position = loc;
+
+			obj.transform.position = leftHead;
+			obj2.transform.position = rightHead;
 			return;
 		}
 	}
