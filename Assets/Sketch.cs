@@ -6,9 +6,11 @@ using LikeProcessing;
 public class Sketch : PSketch {
 
 	int ribbonCnt = 3;
-	int StickLen = Screen.width / 2;
+	int stickLen = Screen.width / 4;
 
 	Ribbon[] ribbons;
+
+    GameObject ctrlRight;
 
 	void Start () {
 		//setupCamera (true);
@@ -36,14 +38,24 @@ public class Sketch : PSketch {
 	//GameObject sphere;
 
     Vector3 getStickHead() {
-        float alpha = Mathf.PI - (1.0f * Input.mousePosition.x / Screen.width) * Mathf.PI;
-        float beta = (1.0f * Input.mousePosition.y / Screen.height) * Mathf.PI;
-        Vector3 stickHead = new Vector3(
-            Mathf.Cos(alpha) * StickLen,
-            Mathf.Sin(alpha) * Mathf.Sin(beta - Mathf.PI / 2) * StickLen,
-            1.0f * Mathf.Sin(alpha) * Mathf.Sin(beta) * StickLen
-        );
-        return stickHead;
+        //float alpha = Mathf.PI - (1.0f * Input.mousePosition.x / Screen.width) * Mathf.PI;
+        //float beta = (1.0f * Input.mousePosition.y / Screen.height) * Mathf.PI;
+        //Vector3 stickHead = new Vector3(
+        //    Mathf.Cos(alpha) * StickLen,
+        //    Mathf.Sin(alpha) * Mathf.Sin(beta - Mathf.PI / 2) * stickLen,
+        //    1.0f * Mathf.Sin(alpha) * Mathf.Sin(beta) * stickLen
+        //);
+        //return stickHead;
+        if (ctrlRight == null)
+            ctrlRight = GameObject.Find("Controller (right)");
+        if (ctrlRight == null)
+            return Vector3.zero;
+        else
+        {
+            Vector3 head = new Vector3(0, 0, stickLen);
+            //Quaternion quat = new Quaternion(ctrlRight.transform.rotation.x, ctrlRight.transform.rotation.y, 0, ctrlRight.transform.rotation.w);
+            return ctrlRight.transform.rotation * head;
+        }
     }
 
 	void Update () {
@@ -56,7 +68,7 @@ public class Sketch : PSketch {
 	}
 
 	public class Ribbon {
-		public int particleCnt           = 40;
+		public int particleCnt           = 60;
         public Color color = Color.HSVToRGB(Random.value,1,1);
 		public float rightDownRandomness = 0.2f;
 		public float radiusMax           = 12;   // maximum width of ribbon
@@ -264,7 +276,7 @@ public class Sketch : PSketch {
 				loc += direction;
 				speed += (loc - preloc) * ribbon.dragFlare;
 			}
-			speed += ribbon.gravity;
+			speed -= ribbon.gravity;
 			speed *= ribbon.friction;
 			loc += speed;
 			Vector3 randomnessv = new Vector3 (
