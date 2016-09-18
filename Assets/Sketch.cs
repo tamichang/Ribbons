@@ -5,7 +5,7 @@ using LikeProcessing;
 
 public class Sketch : PSketch {
 
-	int ribbonCnt = 1;
+	int ribbonCnt = 3;
 	int StickLen = Screen.width / 2;
 
 	Ribbon[] ribbons;
@@ -56,9 +56,9 @@ public class Sketch : PSketch {
 	}
 
 	public class Ribbon {
-		public int particleCnt           = 20;
-        public Color Color = Color.HSVToRGB(Random.value,1,1);
-		public float rightDownRandomness = 0.1f;
+		public int particleCnt           = 40;
+        public Color color = Color.HSVToRGB(Random.value,1,1);
+		public float rightDownRandomness = 0.2f;
 		public float radiusMax           = 12;   // maximum width of ribbon
 		public float radiusDivide        = 10;   // distance between current and next point / this = radius for first half of the ribbon
 		public Vector3 gravity           = new Vector3(0,.01f,0); // gravity applied to each particle
@@ -83,7 +83,13 @@ public class Sketch : PSketch {
 			lineObj = new GameObject("ribbon");
 //			lineObj.AddComponent<LineRenderer>();
 			lineObj.AddComponent<MeshFilter>();
-			lineObj.AddComponent<MeshRenderer>();
+			MeshRenderer meshRenderer = lineObj.AddComponent<MeshRenderer>();
+//			Material material = new Material(Shader.Find("Standard"));
+//			material.EnableKeyword("_EMISSION");
+//			material.SetColor("_EmissionColor", color);
+			Material material = new Material(Shader.Find("Particles/Additive"));
+			material.SetColor("_TintColor", color);
+			meshRenderer.sharedMaterial = material;
 		}
 
 		public void update (Vector3 stickHead) {
