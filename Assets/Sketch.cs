@@ -12,7 +12,7 @@ public class Sketch : PSketch {
 
 	void Start () {
 		setupCamera (true);
-		Application.targetFrameRate = 20;
+		//Application.targetFrameRate = 20;
 
 		ribbons = new Ribbon[ribbonCnt];
 		for(int i=0; i<ribbonCnt; i++) {
@@ -61,6 +61,9 @@ public class Sketch : PSketch {
 		public float dragFlare           = .015f;  // degree to which the drag makes the ribbon flare out
 		Particle[] particles;
 
+		float deltaTime = 0f;
+		float frameRateTime = 10.0f / 60.0f;
+
 		GameObject lineObj;
 
 		public Ribbon () {
@@ -77,8 +80,12 @@ public class Sketch : PSketch {
 		}
 
 		public void update (Vector3 stickHead) {
-			move (stickHead);
-			draw ();
+			deltaTime += Time.deltaTime;
+			if (deltaTime >= frameRateTime) {
+				deltaTime = 0;
+				move (stickHead);
+				draw ();
+			}
 		}
 
 		void move(Vector3 stickHead) {
