@@ -6,17 +6,19 @@ using LikeProcessing;
 public class Sketch : PSketch {
 
 	int ribbonCnt = 1;
-	int StickLen = Screen.width / 4;
+	int StickLen = Screen.width / 2;
 
 	Ribbon[] ribbons;
 
 	void Start () {
-		setupCamera (true);
-		//Application.targetFrameRate = 20;
+		//setupCamera (true);
+        background(Color.black);
+        //Application.targetFrameRate = 20;
 
+        Vector3 stickHead = getStickHead();
 		ribbons = new Ribbon[ribbonCnt];
 		for(int i=0; i<ribbonCnt; i++) {
-			Ribbon ribbon = new Ribbon ();
+			Ribbon ribbon = new Ribbon (stickHead);
 			ribbons [i] = ribbon;
 		}
 
@@ -31,16 +33,21 @@ public class Sketch : PSketch {
 //		mesh.triangles = new int[] {0, 1, 2};
 	}
 
-	GameObject sphere;
+	//GameObject sphere;
+
+    Vector3 getStickHead() {
+        float alpha = Mathf.PI - (1.0f * Input.mousePosition.x / Screen.width) * Mathf.PI;
+        float beta = (1.0f * Input.mousePosition.y / Screen.height) * Mathf.PI;
+        Vector3 stickHead = new Vector3(
+            Mathf.Cos(alpha) * StickLen,
+            Mathf.Sin(alpha) * Mathf.Sin(beta - Mathf.PI / 2) * StickLen,
+            1.0f * Mathf.Sin(alpha) * Mathf.Sin(beta) * StickLen
+        );
+        return stickHead;
+    }
 
 	void Update () {
-		float alpha = Mathf.PI - (1.0f * Input.mousePosition.x / Screen.width) * Mathf.PI;
-		float beta = (1.0f * Input.mousePosition.y / Screen.height) * Mathf.PI;
-		Vector3 stickHead = new Vector3 (
-			Mathf.Cos(alpha) * StickLen,
-			Mathf.Sin(alpha) * Mathf.Sin(beta - Mathf.PI/2) * StickLen,
-			1.0f * Mathf.Sin(alpha) * Mathf.Sin(beta) * StickLen
-		);
+        Vector3 stickHead = getStickHead();
 		foreach (Ribbon ribbon in ribbons) {
 			ribbon.update (stickHead);
 		}
@@ -50,7 +57,7 @@ public class Sketch : PSketch {
 
 	public class Ribbon {
 		public int particleCnt           = 20;
-		public Color Color               = Color.white;
+        public Color Color = Color.HSVToRGB(Random.value,1,1);
 		public float rightDownRandomness = 0.1f;
 		public float radiusMax           = 12;   // maximum width of ribbon
 		public float radiusDivide        = 10;   // distance between current and next point / this = radius for first half of the ribbon
@@ -62,14 +69,14 @@ public class Sketch : PSketch {
 		Particle[] particles;
 
 		float deltaTime = 0f;
-		float frameRateTime = 10.0f / 60.0f;
+        float frameRateTime = 1.0f / 20;
 
 		GameObject lineObj;
 
-		public Ribbon () {
+		public Ribbon (Vector3 stickHead) {
 			particles = new Particle[particleCnt];
 			for (int i=0; i<particleCnt; i++) {
-				Particle p = new Particle(this, Vector3.zero);
+				Particle p = new Particle(this, stickHead);
 				particles[i] = p;
 			}
 
@@ -214,15 +221,15 @@ public class Sketch : PSketch {
 		public float radius;
 		Ribbon ribbon;
 
-		GameObject obj, obj2;
+		//GameObject obj, obj2;
 
 		public Particle(Ribbon ribbon, Vector3 loc) {
 			this.ribbon = ribbon;
 
-			obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			obj.transform.localScale *= 10;
-			obj2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			obj2.transform.localScale *= 10;
+			//obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			//obj.transform.localScale *= 10;
+			//obj2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			//obj2.transform.localScale *= 10;
 			reset(loc);
 		}
 
@@ -234,8 +241,8 @@ public class Sketch : PSketch {
 //			leftHead = head;
 //			rightHead = head;
 			speed = Vector3.zero;
-			obj.transform.position = left;
-			obj2.transform.position = right;
+			//obj.transform.position = left;
+			//obj2.transform.position = right;
 		}
 
 		public void move(Particle pback, Particle phead, int index) {
@@ -292,8 +299,8 @@ public class Sketch : PSketch {
 			leftHead  = (phead.left + left) / 2;
 			rightHead = (phead.right + right) / 2;
 
-			obj.transform.position = leftHead;
-			obj2.transform.position = rightHead;
+			//obj.transform.position = leftHead;
+			//obj2.transform.position = rightHead;
 			return;
 		}
 	}
