@@ -16,8 +16,8 @@ namespace LikeProcessing
             cameraObj = new GameObject("PSketch MainCamera");
             Camera camera = cameraObj.AddComponent<Camera>();
             camera.tag = "MainCamera";
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = Color.gray;
+            //camera.clearFlags = CameraClearFlags.SolidColor;
+            //camera.backgroundColor = Color.gray;
 			camera.farClipPlane = Screen.height / 2.0f * 10;
             setupCamera();
 

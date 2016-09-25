@@ -5,77 +5,99 @@ using LikeProcessing;
 
 public class Sketch : PSketch {
 
-	int ribbonCnt = 3;
-	int stickLen = Screen.width / 4;
-
-	Ribbon[] ribbons;
-
-    GameObject ctrlRight;
+    Ribbons[] ribbonsArray;
 
 	void Start () {
-		//setupCamera (true);
-        background(Color.black);
+        //setupCamera (true);
+        //background(Color.HSVToRGB(219.0f/359, 57.0f/100, 19.0f/100));
         //Application.targetFrameRate = 20;
+        ribbonsArray = new Ribbons[2];
+        ribbonsArray[0] = new Ribbons("Controller (right)");
+        ribbonsArray[1] = new Ribbons("Controller (left)");
 
-        Vector3 stickHead = getStickHead();
-		ribbons = new Ribbon[ribbonCnt];
-		for(int i=0; i<ribbonCnt; i++) {
-			Ribbon ribbon = new Ribbon (stickHead);
-			ribbons [i] = ribbon;
-		}
-
-//		sphere = new GameObject ();
-////		sphere.transform.localScale *= 100;
-//		sphere.AddComponent<MeshFilter>();
-//		sphere.AddComponent<MeshRenderer>();
-//		Mesh mesh = sphere.GetComponent<MeshFilter>().mesh;
-//		mesh.Clear();
-//		mesh.vertices = new Vector3[] {new Vector3(0, 0, 0), new Vector3(0, 100, 0), new Vector3(100, 100, 0)};
-//		mesh.uv = new Vector2[] {new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1)};
-//		mesh.triangles = new int[] {0, 1, 2};
-	}
+        //		sphere = new GameObject ();
+        ////		sphere.transform.localScale *= 100;
+        //		sphere.AddComponent<MeshFilter>();
+        //		sphere.AddComponent<MeshRenderer>();
+        //		Mesh mesh = sphere.GetComponent<MeshFilter>().mesh;
+        //		mesh.Clear();
+        //		mesh.vertices = new Vector3[] {new Vector3(0, 0, 0), new Vector3(0, 100, 0), new Vector3(100, 100, 0)};
+        //		mesh.uv = new Vector2[] {new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1)};
+        //		mesh.triangles = new int[] {0, 1, 2};
+    }
 
 	//GameObject sphere;
 
-    Vector3 getStickHead() {
-        //float alpha = Mathf.PI - (1.0f * Input.mousePosition.x / Screen.width) * Mathf.PI;
-        //float beta = (1.0f * Input.mousePosition.y / Screen.height) * Mathf.PI;
-        //Vector3 stickHead = new Vector3(
-        //    Mathf.Cos(alpha) * StickLen,
-        //    Mathf.Sin(alpha) * Mathf.Sin(beta - Mathf.PI / 2) * stickLen,
-        //    1.0f * Mathf.Sin(alpha) * Mathf.Sin(beta) * stickLen
-        //);
-        //return stickHead;
-        if (ctrlRight == null)
-            ctrlRight = GameObject.Find("Controller (right)");
-        if (ctrlRight == null)
-            return Vector3.zero;
-        else
-        {
-            Vector3 head = new Vector3(0, 0, stickLen);
-            //Quaternion quat = new Quaternion(ctrlRight.transform.rotation.x, ctrlRight.transform.rotation.y, 0, ctrlRight.transform.rotation.w);
-            return ctrlRight.transform.rotation * head;
-        }
-    }
+    
 
 	void Update () {
-        Vector3 stickHead = getStickHead();
-		foreach (Ribbon ribbon in ribbons) {
-			ribbon.update (stickHead);
-		}
+        foreach (Ribbons ribbons in ribbonsArray)
+            ribbons.update();
 //		sphere.transform.position = stickHead;
 
 	}
 
+    public class Ribbons {
+        Ribbon[] ribbons;
+        string ctrlName;
+        GameObject ctrl;
+        int ribbonCnt = 3;
+        float stickLen = .1f;
+
+
+        public Ribbons(string ctrlName) {
+            this.ctrlName = ctrlName;
+            ribbons = new Ribbon[ribbonCnt];
+            for (int i = 0; i < ribbonCnt; i++)
+            {
+                Ribbon ribbon = new Ribbon();
+                ribbons[i] = ribbon;
+            }
+        }
+
+        public void update() {
+            if (ctrl == null) {
+                ctrl = GameObject.Find(ctrlName);
+            }
+            if (ctrl == null) return;
+
+            Vector3 stickHead = getStickHead();
+            foreach (Ribbon ribbon in ribbons)
+            {
+                ribbon.update(stickHead);
+            }
+        }
+
+        Vector3 getStickHead()
+        {
+            //float alpha = Mathf.PI - (1.0f * Input.mousePosition.x / Screen.width) * Mathf.PI;
+            //float beta = (1.0f * Input.mousePosition.y / Screen.height) * Mathf.PI;
+            //Vector3 stickHead = new Vector3(
+            //    Mathf.Cos(alpha) * StickLen,
+            //    Mathf.Sin(alpha) * Mathf.Sin(beta - Mathf.PI / 2) * stickLen,
+            //    1.0f * Mathf.Sin(alpha) * Mathf.Sin(beta) * stickLen
+            //);
+            //return stickHead;
+            
+            Vector3 head = new Vector3(0, 0, stickLen);
+            //Quaternion quat = new Quaternion(ctrlRight.transform.rotation.x, ctrlRight.transform.rotation.y, 0, ctrlRight.transform.rotation.w);
+            //Vector3 eulerAngles = ctrl.transform.rotation.eulerAngles;
+            //Quaternion quat = Quaternion.Euler(0, eulerAngles.x, eulerAngles.y);
+            return ctrl.transform.rotation * head + ctrl.transform.position;
+            //return ctrlRight.transform.rotation * head;
+        }
+    }
+
+
 	public class Ribbon {
-		public int particleCnt           = 60;
-        public Color color = Color.HSVToRGB(Random.value,1,1);
-		public float rightDownRandomness = 0.2f;
+		public int particleCnt           = 100;
+        public Color color = Color.HSVToRGB(Random.value,1,0.5f);
+		public float rightDownRandomness = 0.0f;
 		public float radiusMax           = 12;   // maximum width of ribbon
 		public float radiusDivide        = 10;   // distance between current and next point / this = radius for first half of the ribbon
-		public Vector3 gravity           = new Vector3(0,.01f,0); // gravity applied to each particle
+		public Vector3 gravity           = new Vector3(0,-.000000f,0); // gravity applied to each particle
 		public float friction            = 1.1f; // friction applied to the gravity of each particle
-		public int maxDistance           = 40;   // if the distance between particles is larger than this the drag comes into effect
+		public float maxDistance         = 10.15f;   // if the distance between particles is larger than this the drag comes into effect
 		public float drag                = 2.5f;  // if distance goes above maxDistance - the points begin to grag. high numbers = less drag
 		public float dragFlare           = .015f;  // degree to which the drag makes the ribbon flare out
 		Particle[] particles;
@@ -85,10 +107,10 @@ public class Sketch : PSketch {
 
 		GameObject lineObj;
 
-		public Ribbon (Vector3 stickHead) {
+		public Ribbon () {
 			particles = new Particle[particleCnt];
 			for (int i=0; i<particleCnt; i++) {
-				Particle p = new Particle(this, stickHead);
+				Particle p = new Particle(this);
 				particles[i] = p;
 			}
 
@@ -229,7 +251,7 @@ public class Sketch : PSketch {
 	}
 
 	public class Particle {
-		public float randomness = .1f;
+		public float randomness = .05f;
 		public Vector3 loc = Vector3.zero;
 		public Vector3 speed = Vector3.zero;
 		public Vector3 left = Vector3.zero;
@@ -241,14 +263,14 @@ public class Sketch : PSketch {
 
 		//GameObject obj, obj2;
 
-		public Particle(Ribbon ribbon, Vector3 loc) {
+		public Particle(Ribbon ribbon) {
 			this.ribbon = ribbon;
 
 			//obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			//obj.transform.localScale *= 10;
 			//obj2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
 			//obj2.transform.localScale *= 10;
-			reset(loc);
+			reset(Vector3.zero);
 		}
 
 		public void reset(Vector3 head) {
@@ -288,13 +310,15 @@ public class Sketch : PSketch {
 			Vector3 randomnessv2 = new Vector3 (
 				(randomness/2 - Random.value*randomness) * distance,
 				(randomness/2 - Random.value*randomness) * distance,
-				0
-			);
+                (randomness / 2 - Random.value * randomness) * distance
+            );
 			loc += randomnessv2;
+
+            
 			if (index > ribbon.particleCnt / 2) {
 				radius = distance / ribbon.radiusDivide;
 			} else {
-				radius = phead.radius * .9f;
+				radius = phead.radius * .95f;
 			}
 
 			radius = Mathf.Min (radius, ribbon.radiusMax);
@@ -303,7 +327,8 @@ public class Sketch : PSketch {
 				if (radius > 1)
 					radius = 1;
 			}
-//			radius = 50;
+            
+			//radius = 0.02f;
 			left = loc + new Vector3 (
 				Mathf.Cos(radian+(Mathf.PI/2*3)) * radius,
 				Mathf.Sin(radian+(Mathf.PI/2*3)) * radius,
