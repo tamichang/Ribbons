@@ -24,6 +24,7 @@ public class Sketch : PSketch {
         //		mesh.vertices = new Vector3[] {new Vector3(0, 0, 0), new Vector3(0, 100, 0), new Vector3(100, 100, 0)};
         //		mesh.uv = new Vector2[] {new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1)};
         //		mesh.triangles = new int[] {0, 1, 2};
+        bloom();
     }
 
 	//GameObject sphere;
@@ -41,8 +42,8 @@ public class Sketch : PSketch {
         Ribbon[] ribbons;
         string ctrlName;
         GameObject ctrl;
-        int ribbonCnt = 3;
-        float stickLen = .1f;
+        int ribbonCnt = 1;
+        float stickLen = 1.0f;
 
 
         public Ribbons(string ctrlName) {
@@ -90,20 +91,20 @@ public class Sketch : PSketch {
 
 
 	public class Ribbon {
-		public int particleCnt           = 100;
-        public Color color = Color.HSVToRGB(Random.value,1,0.5f);
+		public int particleCnt           = 60;
+        public Color color = Color.HSVToRGB(Random.value,1.0f,0.9f);
 		public float rightDownRandomness = 0.0f;
 		public float radiusMax           = 12;   // maximum width of ribbon
-		public float radiusDivide        = 10;   // distance between current and next point / this = radius for first half of the ribbon
+		public float radiusDivide        = 10.0f;   // distance between current and next point / this = radius for first half of the ribbon
 		public Vector3 gravity           = new Vector3(0,-.000000f,0); // gravity applied to each particle
 		public float friction            = 1.1f; // friction applied to the gravity of each particle
-		public float maxDistance         = 10.15f;   // if the distance between particles is larger than this the drag comes into effect
+		public float maxDistance         = 0.1f;   // if the distance between particles is larger than this the drag comes into effect
 		public float drag                = 2.5f;  // if distance goes above maxDistance - the points begin to grag. high numbers = less drag
 		public float dragFlare           = .015f;  // degree to which the drag makes the ribbon flare out
 		Particle[] particles;
 
 		float deltaTime = 0f;
-        float frameRateTime = 1.0f / 20;
+        float frameRateTime = 1.0f / 30;
 
 		GameObject lineObj;
 
@@ -118,12 +119,13 @@ public class Sketch : PSketch {
 //			lineObj.AddComponent<LineRenderer>();
 			lineObj.AddComponent<MeshFilter>();
 			MeshRenderer meshRenderer = lineObj.AddComponent<MeshRenderer>();
-//			Material material = new Material(Shader.Find("Standard"));
-//			material.EnableKeyword("_EMISSION");
-//			material.SetColor("_EmissionColor", color);
-			Material material = new Material(Shader.Find("Particles/Additive"));
-			material.SetColor("_TintColor", color);
-			meshRenderer.sharedMaterial = material;
+            Material material = new Material(Shader.Find("StandardCullOff"));
+            material.EnableKeyword("_EMISSION");
+            material.SetColor("_EmissionColor", color*2);
+            //material.SetColor("_Color", color);
+            //Material material = new Material(Shader.Find("Particles/Additive"));
+            //material.SetColor("_TintColor", color);
+            meshRenderer.sharedMaterial = material;
 		}
 
 		public void update (Vector3 stickHead) {
