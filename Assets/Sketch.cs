@@ -34,16 +34,20 @@ public class Sketch : PSketch {
 	void Update () {
         foreach (Ribbons ribbons in ribbonsArray)
             ribbons.update();
-//		sphere.transform.position = stickHead;
-
-	}
+        //		sphere.transform.position = stickHead;
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log(111);
+            this.recordMp4();
+        }
+    }
 
     public class Ribbons {
         Ribbon[] ribbons;
         string ctrlName;
         GameObject ctrl;
         int ribbonCnt = 1;
-        float stickLen = 1.0f;
+        float stickLen = 1.5f;
 
 
         public Ribbons(string ctrlName) {
@@ -121,7 +125,7 @@ public class Sketch : PSketch {
 			MeshRenderer meshRenderer = lineObj.AddComponent<MeshRenderer>();
             Material material = new Material(Shader.Find("StandardCullOff"));
             material.EnableKeyword("_EMISSION");
-            material.SetColor("_EmissionColor", color*2);
+            material.SetColor("_EmissionColor", color*1.5f);
             //material.SetColor("_Color", color);
             //Material material = new Material(Shader.Find("Particles/Additive"));
             //material.SetColor("_TintColor", color);

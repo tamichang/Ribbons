@@ -226,6 +226,9 @@ namespace UTJ
         {
             m_outputDir.CreateDirectory();
             m_quad = FrameCapturerUtils.CreateFullscreenQuad();
+            if (!m_shCopy) {
+                m_shCopy = FrameCapturerUtils.GetFrameBufferCopyShader();
+            }
             m_mat_copy = new Material(m_shCopy);
 
             if (GetComponent<Camera>().targetTexture != null)
